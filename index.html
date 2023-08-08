@@ -1,84 +1,86 @@
-<!-- Code from d3-graph-gallery.com -->
 <!DOCTYPE html>
-<meta charset="utf-8">
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Quick Start - Leaflet</title>
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<!-- Create a div where the graph will take place -->
-<form >
-    <input onchange="handleChange(this.value)"  name="dataset" id="radio1" type="radio" value="0"/>
-    <label  for="radio1">Conjunto 1</label>
-    <input onchange="handleChange(this.value)" name="dataset" id="radio2" type="radio" value="1"/>
-    <label for="radio2">Conjunto 2</label>
-</form>
-<div id="my_dataviz"></div>
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		.leaflet-container {
+			height: 400px;
+			width: 600px;
+			max-width: 100%;
+			max-height: 100%;
+		}
+	</style>
+
+	
+</head>
+<body>
 
 
+
+<div id="map" style="width: 600px; height: 400px;"></div>
 <script>
-var dataURLs = ["https://gist.githubusercontent.com/Dicarvajalb/dab1c6b90fd4458b6f72667981a5520d/raw/8b7d76e58e1aa876b7f177de0ab69414f7f252b5/1.csv", "https://gist.githubusercontent.com/Dicarvajalb/b3cee3659f63cf673ca6b15e5c42d63b/raw/1af309812fc8b30fdec41e19933ba93b911fe172/2.csv"]
-var handleChange = (value) =>{
-    draw(dataURLs[value])
-}
-function draw (dataURL){
-    document.getElementById("my_dataviz").innerHTML = ""
-    // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 40},
-    width = 860 - margin.left - margin.right,
-    height = 800 - margin.top - margin.bottom;
+    var pos = 51.505
+    var pos1 = [51.5, -0.09]
+    var pos2 = [51.54, -0.04]
+    var pos3 = [51.5, -0.02]
+    var positions = [pos1,pos2,pos3]
+    var index = 0
+	var map = L.map('map').setView(pos1, 13);
+    
 
-// append the svg object to the body of the page
-var svg = d3.select("#my_dataviz")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-console.log("svg", svg.pop)
-// get the data
-d3.csv(dataURL, function(data) {
+	var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+    var marker = L.marker(pos1).addTo(map);
+    var marker = L.marker(pos2).addTo(map);
+    var marker = L.marker(pos3).addTo(map);
 
-    console.log(data.price)
-  // X axis: scale and draw:
-  var x = d3.scaleLinear()
-      .domain([0, 1000])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
-      .range([0, width]);
-  svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
 
-  // set the parameters for the histogram
-  var histogram = d3.histogram()
-      .value(function(d) { return d.price; })   // I need to give the vector of value
-      .domain(x.domain())  // then the domain of the graphic
-      .thresholds(x.ticks(50)); // then the numbers of bins
-
-  // And apply this function to data to get the bins
-  var bins = histogram(data);
-
-  // Y axis: scale and draw:
-  var y = d3.scaleLinear()
-      .range([height, 0]);
-      y.domain([0, d3.max(bins, function(d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
-  svg.append("g")
-      .call(d3.axisLeft(y));
-
-  // append the bar rectangles to the svg element
-  svg.selectAll("rect")
-      .data(bins)
-      .enter()
-      .append("rect")
-      
-        .attr("x", 1)
-        .attr("transform", function(d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
-        .transition().duration(1000)
-        .attr("width", function(d) { return x(d.x1) - x(d.x0) -1 ; })
-        .attr("height", function(d) { return height - y(d.length); })
-        .style("fill", "#69b3a2")
-
-});
-
-}
-
+    const changeView = ()  =>{
+        pos+= 0.01
+        map.setView([pos, -0.09], 13);
+    }
+    const next = ()  =>{
+        index = (index+1) % positions.length
+        map.setView(positions[index], 13);
+        updateContent()
+    }
+    const updateContent = ()  =>{
+        if(index==0){
+            document.getElementById("content").innerHTML = "El puente dorado <p style='font-size:15px'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>"
+        }
+        else if(index==1){
+            document.getElementById("content").innerHTML = "El arco fúnebre <p style='font-size:15px'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>"
+        }
+        else{
+            document.getElementById("content").innerHTML = "La fría calle 7 <p style='font-size:15px'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>"
+        }
+    }
+    
+    
 </script>
+
+<button onclick="changeView()">Arriba</button>
+<button onclick="next()">Siguiente</button>
+<div id= "content" style="font-size: 20px; border: 2px dashed grey;">
+    El puente
+</div>
+<script>
+    updateContent()
+</script>
+</body>
+</html>
